@@ -10,3 +10,4 @@ edition = "2018"
 sqlx = { version = "0.3", default-features = false, features = [ "runtime-async-std", "macros", "mysql" ] }
 futures = "0.3"
 chrono = "0.4"
+anyhow = "1.0"
