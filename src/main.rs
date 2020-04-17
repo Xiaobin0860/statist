@@ -14,7 +14,7 @@ const TS_START: i64 = 1546272000;
 const SECS_PER_DAY: i64 = 24 * 60 * 60;
 
 type IdSet = HashSet<u64>;
-type ChannleStayMap = HashMap<String, Stay>;
+type ChannleStayMap = HashMap<u32, Stay>;
 
 #[derive(Debug)]
 struct Stay {
@@ -41,7 +41,7 @@ struct Raw {
     device_id: String,
     new_device: i8,
     act: i8,
-    rc: String,
+    rc: u32,
 }
 
 async fn do_statistics(
@@ -81,7 +81,7 @@ WHERE id>=? and id<=?
                 }
                 let rc_stay_map = all_stay_map.get_mut(&raw.sid).unwrap();
                 if !rc_stay_map.contains_key(&raw.rc) {
-                    rc_stay_map.insert(String::from(raw.rc.as_str()), Stay::new());
+                    rc_stay_map.insert(raw.rc, Stay::new());
                 }
                 let stay = rc_stay_map.get_mut(&raw.rc).unwrap();
                 stay.log_uids.get_mut(i as usize).unwrap().insert(raw.uid);
