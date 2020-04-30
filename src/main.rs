@@ -95,7 +95,7 @@ WHERE id>=? and id<=?
             }
         }
     }
-    //println!("rc_stay_map: {:?}", rc_stay_map);
+    // println!("all_stay_map: {:?}", all_stay_map);
     //1-30天前注册留存
     for (sid, rc_stay_map) in &all_stay_map {
         for (rc, stay) in rc_stay_map {
@@ -133,11 +133,13 @@ WHERE id>=? and id<=?
     }
 
     //删1月前原始统计数据.
+    println!("DELETE FROM t_statistics_raw WHERE id<{}", min);
     sqlx::query("DELETE FROM t_statistics_raw WHERE id<?")
         .bind(min)
         .execute(&pool)
         .await?;
     //删1月前留存数据.
+    println!("DELETE FROM t_stay_daily WHERE dt<'{}'", day30ago);
     sqlx::query("DELETE FROM t_stay_daily WHERE dt<?")
         .bind(day30ago)
         .execute(&pool)
