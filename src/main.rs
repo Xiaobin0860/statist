@@ -50,6 +50,7 @@ async fn do_statistics(
     min: i64,
     max: i64,
     id_stoday: i64,
+    day30ago: &String,
 ) -> anyhow::Result<()> {
     let pool = MySqlPool::new(sql).await?;
     let raws = sqlx::query_as!(
@@ -131,6 +132,17 @@ WHERE id>=? and id<=?
         }
     }
 
+    //删1月前原始统计数据.
+    sqlx::query("DELETE FROM t_statistics_raw WHERE id<?")
+        .bind(min)
+        .execute(&pool)
+        .await?;
+    //删1月前留存数据.
+    sqlx::query("DELETE FROM t_stay_daily WHERE dt<?")
+        .bind(day30ago)
+        .execute(&pool)
+        .await?;
+
     Ok(())
 }
 
@@ -165,6 +177,12 @@ fn main() {
         end_dt.month(),
         end_dt.day()
     );
+    let day30ago = format!(
+        "{}-{:02}-{:02}",
+        start_dt.year(),
+        start_dt.month(),
+        start_dt.day()
+    );
     println!("day: {}", day);
     let ts = end_ts - TS_START;
     let id_max = (ts << 32) + std::u32::MAX as i64;
@@ -175,7 +193,9 @@ fn main() {
         "{} id_min: {}, id_max: {}, id_stoday: {}",
         sql, id_min, id_max, id_stoday
     );
-    match executor::block_on(do_statistics(&day, sql, id_min, id_max, id_stoday)) {
+    match executor::block_on(do_statistics(
+        &day, sql, id_min, id_max, id_stoday, &day30ago,
+    )) {
         Err(e) => println!("{:?}", e),
         _ => (),
     }
