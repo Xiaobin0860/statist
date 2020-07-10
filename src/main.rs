@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 
-const TS_START: i64 = 1546272000;
+const TS_START: i64 = 1593532800;
 const SECS_PER_DAY: i64 = 24 * 60 * 60;
 
 type IdSet = HashSet<u64>;
