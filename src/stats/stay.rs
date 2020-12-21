@@ -43,7 +43,7 @@ pub async fn do_statistics(sql: &String, run_ts: i64) -> anyhow::Result<()> {
     let cur_dt = Local::now();
     let local_offset = *cur_dt.offset();
     //统计日24点
-    let mut end_ts: i64 = 0;
+    let end_ts;
     if run_ts > 0 {
         let run_dt =
             DateTime::<Local>::from_utc(NaiveDateTime::from_timestamp(run_ts, 0), local_offset);
