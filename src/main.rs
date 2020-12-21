@@ -1,3 +1,5 @@
+use chrono::prelude::*;
+use chrono::DateTime;
 use futures::executor;
 use std::env;
 use std::fs;
@@ -9,7 +11,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
         println!(
-            "{} mysql://<user>[:<password>]@<host>[:<port>]/<database> rare_items.json",
+            "{} mysql://<user>[:<password>]@<host>[:<port>]/<database> rare_items.json [timestamp]",
             args[0]
         );
         return;
@@ -25,12 +27,20 @@ fn main() {
             rare.insert(id, ct);
         }
     }
+    let mut run_ts: i64 = 0;
+    if args.len() > 3 {
+        run_ts = args[3].parse().unwrap();
+        let cur_dt = Local::now();
+        let run_dt =
+            DateTime::<Local>::from_utc(NaiveDateTime::from_timestamp(run_ts, 0), *cur_dt.offset());
+        println!("cur_dt={}, run_dt={}", cur_dt, run_dt);
+    }
     // println!("{:?}", rare);
-    match executor::block_on(stats_stay(sql)) {
+    match executor::block_on(stats_stay(sql, run_ts)) {
         Err(e) => println!("{:?}", e),
         _ => (),
     }
-    match executor::block_on(stats_rare(sql, &rare)) {
+    match executor::block_on(stats_rare(sql, &rare, run_ts)) {
         Err(e) => println!("{:?}", e),
         _ => (),
     }

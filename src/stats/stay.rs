@@ -39,12 +39,19 @@ struct Raw {
 }
 
 #[allow(dead_code)]
-pub async fn do_statistics(sql: &String) -> anyhow::Result<()> {
-    let dt = Local::now();
-    let local_offset = *dt.offset();
-    println!("dt: {}", dt);
+pub async fn do_statistics(sql: &String, run_ts: i64) -> anyhow::Result<()> {
+    let cur_dt = Local::now();
+    let local_offset = *cur_dt.offset();
     //统计日24点
-    let end_ts = dt.timestamp() - dt.time().num_seconds_from_midnight() as i64;
+    let mut end_ts: i64 = 0;
+    if run_ts > 0 {
+        let run_dt =
+            DateTime::<Local>::from_utc(NaiveDateTime::from_timestamp(run_ts, 0), local_offset);
+        end_ts = run_dt.timestamp() - run_dt.time().num_seconds_from_midnight() as i64;
+    } else {
+        println!("cur_dt: {}", cur_dt);
+        end_ts = cur_dt.timestamp() - cur_dt.time().num_seconds_from_midnight() as i64;
+    }
     let end_dt =
         DateTime::<Local>::from_utc(NaiveDateTime::from_timestamp(end_ts - 1, 0), local_offset);
     let start_ts = end_ts - 31 * SECS_PER_DAY;
@@ -68,7 +75,7 @@ pub async fn do_statistics(sql: &String) -> anyhow::Result<()> {
         start_dt.month(),
         start_dt.day()
     );
-    println!("day: {}", day);
+    println!("report day: {}, 30d-ago: {}", day, day30ago);
     let ts = end_ts - TS_START;
     let id_max = (ts << 32) + std::u32::MAX as i64;
     let id_min = (ts - 31 * SECS_PER_DAY) << 32;
